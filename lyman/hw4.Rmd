@@ -1,0 +1,117 @@
+---
+title: "hw4 Yirun Wang (aaron.wang@wisc.edu)"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**Introduction**\
+\
+In order to find the closest measure of the cB58 in an undiscovered, gravitationally lensed, high-redshift Lyman-break galaxy, I built the base model firstly. For the base model, I tried to use Manhattan distance to measure the distance between each point. The reason I use Manhattan distance is that I believe calculating the distance between each point is the most stright-forward method to find the closest spectrum. The first step is to standardize the flux. Since there is no built-in function in R to calculate the Manhattan distance, I wrote the function by myself. However, it did not work since it did not put the noisy version of cB58 in the top three distance. Then, I used another distance which is Minkowski distance. As for this distance, I chose p = 3 and p = 4 but none of them worked. I believe one of the reasons for the failure is the value of k. Keeping all the codes the same, I finally turned to Euclidean distance. This distance finally put the noisy version in the third place. By plotting the graph, there is enough evidence that this method is effective.
+
+Then, using the base model and CHTC, I am able to do the computation in a large scale. Firstly, I wrote sh file which unpacks R, unpacks the FITSio package, tells bash where R is, tells R where itself and its libraries are, unpacks the current .tgz file and runs hw4.R on that directory. Then, I wrote a sub file to transfer 3586.tgz to a compute node, extract it to a directory containing 1000 .fits files, run hw4.R on the 3586 directory, and return the csv file. However, I met several problems with my base model. It does not consider spectra shorter than cB58 and some NA values in the computation of distances. Therefore, I wrote two if statement to check for the length of the spectra and NA values and use next in R to ignore them. Finally, I successfully get the 100 spectras that fits cB58 the most.
+
+
+
+```{r}
+rm(list=ls())
+require("FITSio")
+cB58 = readFrameFromFITS("cB58_Lyman_break.fit") 
+n=dim(cB58)[1]
+spec = read.csv(file = 'hw4best100.csv', header = FALSE)
+new_cB58 = (cB58$FLUX-mean(cB58$FLUX))/sd(cB58$FLUX)
+```
+## Fitting Plots
+
+```{r}
+spec1 = readFrameFromFITS(spec[1, 2])
+data1 = spec1$flux
+point1 = spec[1, 3]
+new_spec1 = (data1-mean(data1))/sd(data1)
+plot(x=1:dim(spec1)[1], y=new_spec1, type='n', main = 'Fitting Graph For The First Spectrum',xlab = 'Shifted Wavelength',ylab = 'Rescaled Flux'); lines(x=1:dim(spec1)[1],y= new_spec1, col = 'blue'); lines(x=point1:(point1+n-1),y=new_cB58,col='red')
+legend("top", legend=c(paste(sep = "","SDSS (noisy) cB58 in " , spec[1, 2]), "cB58 (low noise) in cB58_Lyman_break.fit"), col=c("blue", "red"), lty=c(1, 1))
+```
+
+```{r}
+spec2 = readFrameFromFITS(spec[2, 2])
+data2 = spec2$flux
+point2 = spec[2, 3]
+new_spec2 = (data2-mean(data2))/sd(data2)
+plot(x=1:dim(spec2)[1], y=new_spec2, type='n', main = 'Fitting Graph For The Second Spectrum',xlab = 'Shifted Wavelength',ylab = 'Rescaled Flux'); lines(x=1:dim(spec2)[1],y= new_spec2, col = 'blue'); lines(x=point2:(point2+n-1),y=new_cB58,col='red')
+legend("top", legend=c(paste(sep = "","SDSS (noisy) cB58 in " ,spec[2, 2]) , "cB58 (low noise) in cB58_Lyman_break.fit"), col=c("blue", "red"), lty=c(1, 1))
+```
+
+```{r}
+spec3 = readFrameFromFITS(spec[3, 2])
+data3 = spec3$flux
+point3 = spec[3, 3]
+new_spec3 = (data3-mean(data3))/sd(data3)
+plot(x=1:dim(spec3)[1], y=new_spec3, type='n', main = 'Fitting Graph For The Third Spectrum',xlab = 'Shifted Wavelength',ylab = 'Rescaled Flux'); lines(x=1:dim(spec3)[1],y= new_spec3, col = 'blue'); lines(x=point3:(point3+n-1),y=new_cB58,col='red')
+legend("top", legend=c(paste(sep = "","SDSS (noisy) cB58 in " ,spec[3, 2]) , "cB58 (low noise) in cB58_Lyman_break.fit"), col=c("blue", "red"), lty=c(1, 1))
+```
+
+```{r}
+spec4 = readFrameFromFITS(spec[4, 2])
+data4 = spec4$flux
+point4 = spec[4, 3]
+new_spec4 = (data4-mean(data4))/sd(data4)
+plot(x=1:dim(spec4)[1], y=new_spec4, type='n', main = 'Fitting Graph For The Fourth Spectrum',xlab = 'Shifted Wavelength',ylab = 'Rescaled Flux'); lines(x=1:dim(spec4)[1],y= new_spec4, col = 'blue'); lines(x=point1:(point1+n-1),y=new_cB58,col='red')
+legend("top", legend=c(paste(sep = "","SDSS (noisy) cB58 in " , spec[4, 2]), "cB58 (low noise) in cB58_Lyman_break.fit"), col=c("blue", "red"), lty=c(1, 1))
+```
+
+```{r}
+spec5 = readFrameFromFITS(spec[5, 2])
+data5 = spec5$flux
+point5 = spec[2, 3]
+new_spec5 = (data5-mean(data5))/sd(data5)
+plot(x=1:dim(spec5)[1], y=new_spec5, type='n', main = 'Fitting Graph For The Fifth Spectrum',xlab = 'Shifted Wavelength',ylab = 'Rescaled Flux'); lines(x=1:dim(spec5)[1],y= new_spec5, col = 'blue'); lines(x=point5:(point5+n-1),y=new_cB58,col='red')
+legend("top", legend=c(paste(sep = "","SDSS (noisy) cB58 in " ,spec[5, 2]) , "cB58 (low noise) in cB58_Lyman_break.fit"), col=c("blue", "red"), lty=c(1, 1))
+```
+
+```{r}
+spec6 = readFrameFromFITS(spec[6, 2])
+data6 = spec6$flux
+point6 = spec[6, 3]
+new_spec6 = (data6-mean(data6))/sd(data6)
+plot(x=1:dim(spec6)[1], y=new_spec6, type='n', main = 'Fitting Graph For The Sixth Spectrum',xlab = 'Shifted Wavelength',ylab = 'Rescaled Flux'); lines(x=1:dim(spec6)[1],y= new_spec6, col = 'blue'); lines(x=point6:(point6+n-1),y=new_cB58,col='red')
+legend("top", legend=c(paste(sep = "","SDSS (noisy) cB58 in " ,spec[6, 2]) , "cB58 (low noise) in cB58_Lyman_break.fit"), col=c("blue", "red"), lty=c(1, 1))
+```
+
+```{r}
+spec7 = readFrameFromFITS(spec[7, 2])
+data7 = spec7$flux
+point7 = spec[7, 3]
+new_spec7 = (data7-mean(data7))/sd(data7)
+plot(x=1:dim(spec7)[1], y=new_spec7, type='n', main = 'Fitting Graph For The Seventh Spectrum',xlab = 'Shifted Wavelength',ylab = 'Rescaled Flux'); lines(x=1:dim(spec7)[1],y= new_spec7, col = 'blue'); lines(x=point7:(point7+n-1),y=new_cB58,col='red')
+legend("top", legend=c(paste(sep = "","SDSS (noisy) cB58 in " , spec[7, 2]), "cB58 (low noise) in cB58_Lyman_break.fit"), col=c("blue", "red"), lty=c(1, 1))
+```
+
+```{r}
+spec8 = readFrameFromFITS(spec[8, 2])
+data8 = spec8$flux
+point8 = spec[8, 3]
+new_spec8 = (data8-mean(data8))/sd(data8)
+plot(x=1:dim(spec8)[1], y=new_spec8, type='n', main = 'Fitting Graph For The Eighth Spectrum',xlab = 'Shifted Wavelength',ylab = 'Rescaled Flux'); lines(x=1:dim(spec8)[1],y= new_spec8, col = 'blue'); lines(x=point8:(point8+n-1),y=new_cB58,col='red')
+legend("top", legend=c(paste(sep = "","SDSS (noisy) cB58 in " ,spec[8, 2]) , "cB58 (low noise) in cB58_Lyman_break.fit"), col=c("blue", "red"), lty=c(1, 1))
+```
+
+```{r}
+spec9 = readFrameFromFITS(spec[9, 2])
+data9 = spec9$flux
+point9 = spec[9, 3]
+new_spec9 = (data9-mean(data9))/sd(data9)
+plot(x=1:dim(spec9)[1], y=new_spec9, type='n', main = 'Fitting Graph For The Ninth Spectrum',xlab = 'Shifted Wavelength',ylab = 'Rescaled Flux'); lines(x=1:dim(spec9)[1],y= new_spec9, col = 'blue'); lines(x=point9:(point9+n-1),y=new_cB58,col='red')
+legend("top", legend=c(paste(sep = "","SDSS (noisy) cB58 in " ,spec[9, 2]) , "cB58 (low noise) in cB58_Lyman_break.fit"), col=c("blue", "red"), lty=c(1, 1))
+```
+
+```{r}
+spec10 = readFrameFromFITS(spec[10, 2])
+data10 = spec10$flux
+point10 = spec[10, 3]
+new_spec10 = (data10-mean(data10))/sd(data10)
+plot(x=1:dim(spec10)[1], y=new_spec10, type='n', main = 'Fitting Graph For The Tenth Spectrum',xlab = 'Shifted Wavelength',ylab = 'Rescaled Flux'); lines(x=1:dim(spec10)[1],y= new_spec10, col = 'blue'); lines(x=point10:(point10+n-1),y=new_cB58,col='red')
+legend("top", legend=c(paste(sep = "","SDSS (noisy) cB58 in " ,spec[10, 2]) , "cB58 (low noise) in cB58_Lyman_break.fit"), col=c("blue", "red"), lty=c(1, 1))
+```
+

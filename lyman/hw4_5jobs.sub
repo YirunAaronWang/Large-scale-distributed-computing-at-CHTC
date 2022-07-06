@@ -1,0 +1,25 @@
+# Before running this with "condor_submit myscript.sub", the
+# directories log, error, and output must exist.
+
+universe = vanilla
+log    =    log/hw4-chtc_$(Cluster)_$(Process).log
+error  =  error/hw4-chtc_$(Cluster)_$(Process).err
+output = output/hw4-chtc_$(Cluster)_$(Process).out
+
+executable = ./hw4.sh
+
+# The two arguments below are:
+# - the process number (0 or 1, since I used "queue 2")
+# - an output file name (myscript.R.0.txt or myscript.R.1.txt)
+arguments = cB58_Lyman_break.fit $(tgz)
+
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT
+transfer_input_files = http://proxy.chtc.wisc.edu/SQUID/chtc/R402.tar.gz, packages_FITSio.tar.gz, hw4.R, /home/groups/STAT605/boss/cB58_Lyman_break.fit,hw4.sh, /home/groups/STAT605/boss/tgz/$(tgz).tgz
+
+request_cpus = 0.88
+request_memory = 110MB
+request_disk = 500000KB
+
+queue tgz from tgzfiles5
+
